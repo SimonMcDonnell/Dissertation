@@ -7,3 +7,8 @@
     * Then type `localhost:8888/tree` into browser
     * Insert token from terminal
 * Read `demo.pynb`
+
+## 23/09/18
+
+* Researched more papers to read discussing homomorphic encryption standards, 
+different encryption schemes, and using homomorphic encryption in neural networks
