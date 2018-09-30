@@ -38,8 +38,6 @@ WORKDIR /SEAL/SEALPython
 RUN pip3 install --upgrade pip
 RUN pip3 install setuptools
 RUN pip3 install -r requirements.txt
-RUN pip3 install jupyter
-RUN pip3 install numpy
 RUN git clone https://github.com/pybind/pybind11.git
 WORKDIR /SEAL/SEALPython/pybind11
 RUN git checkout a303c6fc479662fd53eaa8990dbc65b7de9b7deb

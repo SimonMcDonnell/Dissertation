@@ -18,3 +18,8 @@ different encryption schemes, and using homomorphic encryption in neural network
 * Read paper - *CryptoNets: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy*
 * Sent email to Yongxin describing what I've looked at and worked on so far
 
+## 30/09/18
+
+* Trained neural networks on UCI abalone dataset in data_exploraion.ipynb
+* Saved weights for inputting enrypted data
+* Installed VirtualBox Ubuntu image with a plan to install PySeal natively next time if I can

@@ -1,2 +1,7 @@
 pybind11
 cppimport
+numpy
+pandas
+jupyter
+matplotlib
+tensorflow
