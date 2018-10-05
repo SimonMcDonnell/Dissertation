@@ -62,7 +62,7 @@ class EA(object):
         v.n = 1
         v.encrypted_values.append(result)
         return v
-    
+        
     def values(self):
         plain_result = []
         if self.encrypted_values: 
