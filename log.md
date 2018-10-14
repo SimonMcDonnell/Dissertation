@@ -23,7 +23,7 @@ different encryption schemes, and using homomorphic encryption in neural network
 ### 30/09/18
 
 * Trained neural networks on UCI abalone dataset in data_exploraion.ipynb
-* Saved weights for inputting enrypted data
+* Saved weights for multiple models trained on this data
 * Installed VirtualBox Ubuntu image with a plan to install PySeal natively next time if I can
 
 ## October
@@ -31,3 +31,15 @@ different encryption schemes, and using homomorphic encryption in neural network
 ### 01/10/18
 
 * Used sigmoid as activation function for abalone dataset and saved weights
+
+### 05/10/18
+
+* Installed PySeal natively on Ubuntu, no need for Docker anymore
+
+### 14/10/18
+
+* Updated seal_wrapper to include the following functionality:
+    * Dot product for matrices of any size
+    * Decrypt matrices of any size
+* Predicted results using encrypted Abalone data and pre-trained weights from linear model
+* Compared predicted results to true labels, found some discrepancy, however, looks to just be a bias issue
