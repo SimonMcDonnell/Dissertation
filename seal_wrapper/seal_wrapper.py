@@ -1,6 +1,6 @@
 import seal
 from seal import EncryptionParameters, SEALContext, KeyGenerator, Evaluator, Encryptor, Decryptor, FractionalEncoder, Plaintext, Ciphertext
-
+import numpy as np
 
 def seal_obj():
     # params obj
@@ -31,24 +31,47 @@ evaluate, encode, decode, encrypt, decrypt = seal_obj()
 class EA(object):
     
     def __init__(self, values, to_encrypt=False):
-        # values must be a list of floats
-        self.n = len(values)
+        # values must be a numpy array of floats
+        self.shape = values.shape
         self.encoded_values = []
         self.encrypted_values = []
-        
-        for i in range(self.n):
-            self.encoded_values.append(encode(values[i]))
+        self.is_vector = self.shape[0] == 1 or self.shape[1] == 1
+
+        if self.is_vector:
+            for i in range(self.shape[0]):
+                self.encoded_values.append(encode(values[i]))
             
-        if to_encrypt:
-            for i in range(self.n):
-                self.encrypted_values.append(Ciphertext())
-                encrypt(self.encoded_values[i], self.encrypted_values[i])
-    
-    def __getitem__(self, key):
-        if self.encrypted_values: 
-            v = self.encrypted_values[key]
+            if to_encrypt:
+                for i in range(self.shape[0]):
+                    self.encrypted_values.append(Ciphertext())
+                    encrypt(self.encoded_values[i], self.encrypted_values[i])
         else:
-            v = self.encoded_values[key]
+            for i in range(self.shape[0]):
+                encoded_row = []
+                for j in range(self.shape[1])
+                    encoded_row.append(encode(values[i, j]))
+                self.encoded_values.append(encoded_row)
+            
+            if to_encrypt:
+                for i in range(self.shape[0]):
+                    encrypted_row = []
+                    for j in range(self.shape[1]):
+                        encrypted_row.append(Ciphertext())
+                        encrypt(self.encoded_values[i][j], encrypted_row[j])
+                    self.encrypted_values.append(encrypted_row)
+    
+
+    def __getitem__(self, key):
+        if self.encrypted_values:
+            if self.is_vector:
+                v = self.encrypted_values[key[0]]
+            else:
+                v = self.encrypted_values[key[0]][key[1]]
+        else:
+            if self.is_vector:
+                v = self.encoded_values[key[0]]
+            else:
+                v = self.encoded_values[key[0]][key[1]]
         return v
     
     def __matmul__(self, other):
@@ -64,16 +87,30 @@ class EA(object):
         return v
         
     def values(self):
-        plain_result = []
-        if self.encrypted_values: 
-            for i in range(self.n):
-                plain_result.append(Plaintext())
-                decrypt(self.encrypted_values[i], plain_result[i])
-        if not plain_result:
-            plain_result = self.encoded_values
-        result = [decode(i) for i in plain_result]
-        if len(result)==1:
-            v = result[0]
+        if self.is_vector:
+            plain_result = []
+            if self.encrypted_values: 
+                for i in range(self.shape[0]):
+                    plain_result.append(Plaintext())
+                    decrypt(self.encrypted_values[i], plain_result[i])
+            if not plain_result:
+                plain_result = self.encoded_values
+            result = [decode(i) for i in plain_result]
+            if len(result)==1:
+                v = result[0]
+            else:
+                v = result
+            return v
         else:
-            v = result
-        return v
+            plain_result = []
+            if self.encrypted_values:
+                for i in range(self.shape[0]):
+                    plain_row = []
+                    for j in range(self.shape[1]):
+                        plain_row.append(Plaintext())
+                        decrypt(self.encrypted_values[i][j], plain_row[j])
+                    if not plain_row:
+                        plain_row = self.encoded_values[i]
+                    result = [decode(k) for k in plain_row]
+                    plain_result.append(result)
+            return plain_result
