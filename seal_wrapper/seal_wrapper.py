@@ -85,6 +85,25 @@ class EA(object):
         v.n = 1
         v.encrypted_values.append(result)
         return v
+
+    def __matmul__(self, other):
+        x_mul_w = []
+        for x_row in range(self.shape[0]):
+            result_row = []
+            for w_col in range(other.shape[1]):
+                x_row_k_col = []
+                for x_col in range(self.shape[1]):
+                    x_row_k_col.append(Ciphertext())
+                    evaluate.multiply_plain(self[x_row][x_col], other[x_col][w_col],
+                                            x_row_k_col[x_col])
+                result = Ciphertext()
+                evaluate.add_many(x_row_k_col, result)
+                result_row.append(result)
+            x_mul_w.append(result_row)
+        v = EA([])
+        v.shape = (len(x_mul_w), len(x_mul_w[0]))
+        v.encrypted_values = x_mul_w
+        return v
         
     def values(self):
         if self.is_vector:
