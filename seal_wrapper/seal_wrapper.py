@@ -35,7 +35,7 @@ class EA(object):
         self.shape = values.shape
         self.encoded_values = []
         self.encrypted_values = []
-        self.is_vector = self.shape[0] == 1 or self.shape[1] == 1
+        self.is_vector = values.ndim == 1
 
         if self.is_vector:
             for i in range(self.shape[0]):
@@ -48,7 +48,7 @@ class EA(object):
         else:
             for i in range(self.shape[0]):
                 encoded_row = []
-                for j in range(self.shape[1])
+                for j in range(self.shape[1]):
                     encoded_row.append(encode(values[i, j]))
                 self.encoded_values.append(encoded_row)
             
@@ -61,28 +61,29 @@ class EA(object):
                     self.encrypted_values.append(encrypted_row)
     
 
-    def __getitem__(self, key):
+    def _getitem(self, key):
+        k1, k2 = key
         if self.encrypted_values:
             if self.is_vector:
-                v = self.encrypted_values[key[0]]
+                v = self.encrypted_values[k1]
             else:
-                v = self.encrypted_values[key[0]][key[1]]
+                v = self.encrypted_values[k1][k2]
         else:
             if self.is_vector:
-                v = self.encoded_values[key[0]]
+                v = self.encoded_values[k1]
             else:
-                v = self.encoded_values[key[0]][key[1]]
+                v = self.encoded_values[k1][k2]
         return v
     
-    def __matmul__(self, other):
+    def vector_mul(self, other):
         x_mul_w = []
-        for i in range(self.n):
+        for i in range(self.shape[0]):
             x_mul_w.append(Ciphertext())
-            evaluate.multiply_plain(self[i], other[i], x_mul_w[i])
+            evaluate.multiply_plain(self._getitem((i,None)), other._getitem((i, None)), x_mul_w[i])
         result = Ciphertext()
         evaluate.add_many(x_mul_w, result)
-        v = EA([])
-        v.n = 1
+        v = EA(np.array([]))
+        v.shape = (1, 1)
         v.encrypted_values.append(result)
         return v
 
@@ -94,14 +95,15 @@ class EA(object):
                 x_row_k_col = []
                 for x_col in range(self.shape[1]):
                     x_row_k_col.append(Ciphertext())
-                    evaluate.multiply_plain(self[x_row][x_col], other[x_col][w_col],
-                                            x_row_k_col[x_col])
+                    evaluate.multiply_plain(self._getitem((x_row, x_col)), 
+                                            other._getitem((x_col, w_col)), x_row_k_col[x_col])
                 result = Ciphertext()
                 evaluate.add_many(x_row_k_col, result)
                 result_row.append(result)
             x_mul_w.append(result_row)
-        v = EA([])
+        v = EA(np.array([]))
         v.shape = (len(x_mul_w), len(x_mul_w[0]))
+        v.is_vector = False
         v.encrypted_values = x_mul_w
         return v
         
@@ -118,7 +120,7 @@ class EA(object):
             if len(result)==1:
                 v = result[0]
             else:
-                v = result
+                v = np.array(result)
             return v
         else:
             plain_result = []
@@ -128,8 +130,11 @@ class EA(object):
                     for j in range(self.shape[1]):
                         plain_row.append(Plaintext())
                         decrypt(self.encrypted_values[i][j], plain_row[j])
-                    if not plain_row:
-                        plain_row = self.encoded_values[i]
                     result = [decode(k) for k in plain_row]
                     plain_result.append(result)
-            return plain_result
+            else:
+                for i in range(self.shape[0]):
+                    plain_row = self.encoded_values[i]
+                    result = [decode(k) for k in plain_row]
+                    plain_result.append(result)
+            return np.array(plain_result)
