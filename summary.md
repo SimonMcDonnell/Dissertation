@@ -1,18 +1,30 @@
 # Summary 
 
-This is a quick summary of what I've worked on so far. I have collected and read through a few of the following papers, in addition to the initial readings that were sent in an email over the summer.
+Here's a summary of what I've worked on since the last time we Skyped.
 
-* CryptoNets: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy [February 24, 2016]
-* Somewhat Practical Fully Homomorphic Encryption [Junfeng Fan and Frederik Vercauteren]
-* Fully Homomorphic Encryption without Bootstrapping [Zvika Brakerski, Craig Gentry, and Vinod Vaikuntanathan]
-* Fully Homomorphic Encryption without Modulus Switching from Classical GapSVP [Zvika Brakerski]
+## Abalone dataset
 
-I've also been using the [Homomorphic Encryption Standardization](http://homomorphicencryption.org/) website to learn more about best practises and try to get a feel for what people think are the best homomorphic algorithms to use. It seems that FV/BFV or BGV seem to be recommended? Correct me if I'm wrong.
+I've taken a dataset from UCI where the aim is predict the age of an abalone from physical measurements. I trained a few simple models using keras of various degrees of depth and different activation functions. The details of this are found in *data_exploration.ipynb*. I note that these models, despite being relatively simple, were too complicated for using with seal without expanding on the wrapper. The models are also not ridiculously accurate, I wanted to quickly train something so I could export the weights and try to use them with encrypted data so I didn't spend too much time tuning parameters.
 
-In addition to this I've had a look at the SEAL library and the ipython notebook you sent me demonstrating how to use it. It looks great but I'm not yet sure how to make this work with deep learning libraries though or if that's even possible....
+## Seal wrapper
 
-I think the main thing I'd like to clarify in the meeting is what direction to go for the project. I think possibly one of the following ideas:
+I've expanded on the *seal_wrapper.py* by allowing matrix inputs. Dot products and adding a bias vector to a matrix are now possible.
 
-* Try out a few different HE algorithms and assess speed and accuracy with a particular network structure? However I'm not sure if there are many python libraries like SEAL that easily implement these. And if not how I would go about this in general...
-* Try one of the HE algorithms that's regarded as one people should use (current recommended standard from the above website) and implement it in a variety of different network structures and assess speed/accurary etc...
-* Some combination of both of these
+## Encrypted predictions
+
+Once the seal wrapper was expanded, I attempted to encrypt the test set from the abalone dataset and get some encrypted predictions. This seemed to go well and the details of this can be found in *encrypted_abalone.ipynb*
+
+## Next tasks
+
+* Activation functions - sigmoid, relu
+* Networks with hidden layers
+* More functionality from seal_wrapper. Functions such as transpose would be nice.
+
+## Questions and points to explore
+
+* It seems that the seal library includes a method for batching inputs so you can work with matrices called PolyCRTBuilder. This seems to depend on setting the encryption parameters to appropriate values and possibly depends on the size of the matrices I intend to use. It seems as well that you can only do element-wise operations on the matrices which means not dot product which isn't ideal...
+
+* The examples provided by PySeal show examples where relinearization is used after doing multiplcations. Is this something that I need to be doing in my current implementation? 
+
+* In addition to the above point, would it be wise to be keep track of the noise budget?
+
