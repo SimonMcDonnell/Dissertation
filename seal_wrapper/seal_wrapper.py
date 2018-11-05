@@ -1,5 +1,5 @@
 import seal
-from seal import EncryptionParameters, SEALContext, KeyGenerator, Evaluator, Encryptor, Decryptor, FractionalEncoder, Plaintext, Ciphertext
+from seal import EncryptionParameters, SEALContext, KeyGenerator, EvaluationKeys, Evaluator, Encryptor, Decryptor, FractionalEncoder, Plaintext, Ciphertext
 import numpy as np
 
 def seal_obj():
@@ -17,15 +17,18 @@ def seal_obj():
     keygen = KeyGenerator(context)
     public_key = keygen.public_key()
     private_key = keygen.secret_key()
+    # evaluation keys
+    ev_keys = EvaluationKeys()
+    keygen.generate_evaluation_keys(1, ev_keys)
     # get encryptor and decryptor
     encryptor = Encryptor(context, public_key)
     decryptor = Decryptor(context, private_key)
     # float number encoder
     encoder = FractionalEncoder(context.plain_modulus(), context.poly_modulus(), 64, 32, 3)
-    return evaluator, encoder.encode, encoder.decode, encryptor.encrypt, decryptor.decrypt
+    return evaluator, encoder.encode, encoder.decode, encryptor.encrypt, decryptor.decrypt, ev_keys
 
 
-evaluate, encode, decode, encrypt, decrypt = seal_obj()
+evaluate, encode, decode, encrypt, decrypt, ev_keys = seal_obj()
 
 
 class EA(object):
@@ -81,7 +84,7 @@ class EA(object):
         return v
 
 
-    def add_bias(self, other):
+    def __add__(self, other):
         x_add_b = []
         for x_row in range(self.shape[0]):
             result_row = []
@@ -112,3 +115,66 @@ class EA(object):
                 result = [decode(k) for k in plain_row]
                 plain_result.append(result)
         return np.array(plain_result)
+
+    
+    def activate_sigmoid(self):
+        sigmoid = []
+        for x_row in range(self.shape[0]):
+            result_row = []
+            for x_col in range(self.shape[1]):
+                coeff1, coeff2, coeff3, coeff4 = encode(0.5), encode(0.25), encode(-1/48), encode(1/480)
+                term1 = term2 = term3 = term4 = Ciphertext()
+                encrypt(coeff1, term1)
+                self.print_val(term1)
+                evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
+                self.print_val(term2)
+                # evaluate.multiply_plain(self._pow3(self._getitem((x_row, x_col))), coeff3, term3)
+                # evaluate.multiply_plain(self._pow(
+                #     self._getitem((x_row, x_col)), 5), coeff4, term4)
+                result = Ciphertext()
+                evaluate.add_many([term1, term2], result)
+                self.print_val(result)
+                print()
+                result_row.append(result)
+            sigmoid.append(result_row)
+        v = EA(np.array([]))
+        v.shape = (len(sigmoid), len(sigmoid[0]))
+        v.encrypted_values = sigmoid
+        return v
+
+
+    def activate_squared(self):
+        for x_row in range(self.shape[0]):
+            for x_col in range(self.shape[1]):
+                evaluate.square(self._getitem((x_row, x_col)))
+
+
+    def _pow3(self, val):
+        total1 = Ciphertext()
+        evaluate.multiply(val, val, total1)
+
+        total2 = Ciphertext()
+        evaluate.multiply(total1, val, total2)
+
+        return total2
+
+
+    def _pow5(self, val):
+        total1 = Ciphertext()
+        evaluate.multiply(val, val, total1)
+
+        total2 = Ciphertext()
+        evaluate.multiply(total1, val, total2)
+
+        total3 = Ciphertext()
+        evaluate.multiply(total2, val, total3)
+
+        total4 = Ciphertext()
+        evaluate.multiply(total3, val, total4)
+        return total4
+
+    def print_val(self, val):
+        # for printing ciphertexts
+        result = Plaintext()
+        decrypt(val, result)
+        print(decode(result))
