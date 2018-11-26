@@ -6,8 +6,8 @@ def seal_obj():
     # params obj
     params = EncryptionParameters()
     # set params
-    params.set_poly_modulus("1x^2048 + 1")
-    params.set_coeff_modulus(seal.coeff_modulus_128(2048))
+    params.set_poly_modulus("1x^8192 + 1")
+    params.set_coeff_modulus(seal.coeff_modulus_128(8192))
     params.set_plain_modulus(1 << 8)
     # get context
     context = SEALContext(params)
@@ -17,9 +17,9 @@ def seal_obj():
     keygen = KeyGenerator(context)
     public_key = keygen.public_key()
     private_key = keygen.secret_key()
-    # evaluation keys
+    # evaluator keys
     ev_keys = EvaluationKeys()
-    keygen.generate_evaluation_keys(1, ev_keys)
+    keygen.generate_evaluation_keys(15, ev_keys)
     # get encryptor and decryptor
     encryptor = Encryptor(context, public_key)
     decryptor = Decryptor(context, private_key)
@@ -122,19 +122,14 @@ class EA(object):
         for x_row in range(self.shape[0]):
             result_row = []
             for x_col in range(self.shape[1]):
-                coeff1, coeff2, coeff3, coeff4 = encode(0.5), encode(0.25), encode(-1/48), encode(1/480)
-                term1 = term2 = term3 = term4 = Ciphertext()
+                coeff1, coeff2, coeff3 = encode(0.5), encode(0.25), encode(-0.02083)
+                term1, term2, term3, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
                 encrypt(coeff1, term1)
-                # self.print_val(term1)
                 evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
-                # self.print_val(term2)
-                # evaluate.multiply_plain(self._pow3(self._getitem((x_row, x_col))), coeff3, term3)
-                # evaluate.multiply_plain(self._pow(
-                #     self._getitem((x_row, x_col)), 5), coeff4, term4)
+                evaluate.exponentiate(self._getitem((x_row, x_col)), 3, ev_keys, term_extra)
+                evaluate.multiply_plain(term_extra, coeff3, term3)
                 result = Ciphertext()
-                evaluate.add_many([term1, term2], result)
-                # self.print_val(result)
-                # print()
+                evaluate.add_many([term1, term2, term3], result)
                 result_row.append(result)
             sigmoid.append(result_row)
         v = EA(np.array([]))
@@ -150,13 +145,14 @@ class EA(object):
 
 
     def _pow3(self, val):
-        total1 = Ciphertext()
-        evaluate.multiply(val, val, total1)
+        # total1 = Ciphertext()
+        # evaluate.multiply(val, val, total1)
 
-        total2 = Ciphertext()
-        evaluate.multiply(total1, val, total2)
-
-        return total2
+        # total2 = Ciphertext()
+        # evaluate.multiply(total1, val, total2)
+        pow = EA(np.array([]), True)
+        pow.encrypted_values = evaluate.exponentiate(val, 3, 15)
+        return pow
 
 
     def _pow5(self, val):
