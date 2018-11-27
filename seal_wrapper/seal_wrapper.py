@@ -6,9 +6,9 @@ def seal_obj():
     # params obj
     params = EncryptionParameters()
     # set params
-    params.set_poly_modulus("1x^8192 + 1")
-    params.set_coeff_modulus(seal.coeff_modulus_128(8192))
-    params.set_plain_modulus(1 << 8)
+    params.set_poly_modulus("1x^4096 + 1")
+    params.set_coeff_modulus(seal.coeff_modulus_128(4096))
+    params.set_plain_modulus(1 << 16)
     # get context
     context = SEALContext(params)
     # get evaluator
@@ -19,7 +19,7 @@ def seal_obj():
     private_key = keygen.secret_key()
     # evaluator keys
     ev_keys = EvaluationKeys()
-    keygen.generate_evaluation_keys(15, ev_keys)
+    keygen.generate_evaluation_keys(30, ev_keys)
     # get encryptor and decryptor
     encryptor = Encryptor(context, public_key)
     decryptor = Decryptor(context, private_key)
