@@ -97,6 +97,21 @@ class EA(object):
         v.shape = (len(x_add_b), len(x_add_b[0]))
         v.encrypted_values = x_add_b
         return v
+
+    
+    def __sub__(self, other):
+        x_sub_b = []
+        for x_row in range(self.shape[0]):
+            result_row = []
+            for x_col in range(self.shape[1]):
+                result_row.append(Ciphertext())
+                evaluate.sub_plain(self._getitem((x_row, x_col)), other._getitem((0, x_col)),
+                                    result_row[x_col])
+            x_sub_b.append(result_row)
+        v = EA(np.array([]))
+        v.shape = (len(x_sub_b), len(x_sub_b[0]))
+        v.encrypted_values = x_sub_b
+        return v
         
         
     def values(self):
