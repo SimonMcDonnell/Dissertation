@@ -23,6 +23,10 @@ def normalize_bias(b, mean, var, shift, scale):
     return (b - mean) * (scale / np.sqrt(var + 0.001)) + shift
 
 
+def sigmoid(z):
+    return 1/(1+np.exp(-z))
+
+
 def plot_predictions(pred_clear, pred_enc, y, title):
     fig = plt.figure(figsize=(6, 6))
     # clear
@@ -61,3 +65,26 @@ def eval_linear():
     print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
     print('MSSE enc: {}'.format(msse(pred_enc.flatten(), y_test)))
     plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Linear')
+
+
+def eval_sigmoid():
+    weights = np.load('sigmoid_weights.npy')
+    w1, b1, scale, shift, mean, std, w2, b2 = weights
+    w1 = normalize_weights(w1, std**2, scale)
+    b1 = normalize_bias(b1, mean, std**2, shift, scale).reshape(1, -1)
+    # clear
+    l1_clear = X_test.values.dot(w1) + b1
+    l1_sig_clear = sigmoid(l1_clear)
+    pred_clear = np.dot(l1_sig_clear, w2) + b2
+    # encrypted
+    w1_enc = EA(w1)
+    b1_enc = EA(b1.reshape(1, -1))
+    w2_enc = EA(w2)
+    b2_enc = EA(b2.reshape(1, -1))
+    l1_enc = X_test_enc.dot(w1_enc) + b1_enc
+    l1_sig_enc = l1_enc.activate_sigmoid()
+    pred_enc = (l1_sig_enc.dot(w2_enc) + b2_enc).values()
+    # report predictions
+    print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
+    print('MSSE enc: {}'.format(msse(pred_enc.flatten(), y_test)))
+    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Sigmoid')
