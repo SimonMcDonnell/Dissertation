@@ -24,7 +24,9 @@ def plot_predictions(pred, y, title):
 
 def eval_linear():
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_dataset()
-    w, b = np.load('linear_weights.npy')
+    weights = np.load('linear_weights.npy')
+    print(weights)
+    return
     # clear
     pred_clear = np.dot(X_test, w) + b
     # encrypted
