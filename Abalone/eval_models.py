@@ -32,7 +32,7 @@ def relu(z):
 
 
 def plot_predictions(pred_clear, pred_enc, y, title, save=False):
-    fig = plt.figure(figsize=(6, 6))
+    fig = plt.figure(figsize=(7, 7))
     # clear
     ax1 = plt.subplot(121)
     ax1.scatter(pred_clear, y, alpha=0.2)
