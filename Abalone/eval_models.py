@@ -27,7 +27,11 @@ def sigmoid(z):
     return 1/(1+np.exp(-z))
 
 
-def plot_predictions(pred_clear, pred_enc, y, title):
+def relu(z):
+    return np.maximum(0, z)
+
+
+def plot_predictions(pred_clear, pred_enc, y, title, save=False):
     fig = plt.figure(figsize=(6, 6))
     # clear
     ax1 = plt.subplot(121)
@@ -43,10 +47,12 @@ def plot_predictions(pred_clear, pred_enc, y, title):
     ax2.set_xlabel('predicted')
     ax2.set_ylabel('true')
     ax2.plot(np.arange(0, 30, 0.1), np.arange(0, 30, 0.1))
+    if save:
+        fig.savefig(title + '.pdf')
     plt.show()
 
 
-def eval_linear():
+def eval_linear(save=False):
     weights = np.load('linear_weights.npy')
     w1, b1, scale, shift, mean, std, w2, b2 = weights
     w1 = normalize_weights(w1, std**2, scale)
@@ -64,10 +70,10 @@ def eval_linear():
     # report predictions
     print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
     print('MSSE enc: {}'.format(msse(pred_enc.flatten(), y_test)))
-    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Linear')
+    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Linear', save)
 
 
-def eval_sigmoid():
+def eval_sigmoid(save=False):
     weights = np.load('sigmoid_weights.npy')
     w1, b1, scale, shift, mean, std, w2, b2 = weights
     w1 = normalize_weights(w1, std**2, scale)
@@ -87,10 +93,10 @@ def eval_sigmoid():
     # report predictions
     print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
     print('MSSE enc: {}'.format(msse(pred_enc.flatten(), y_test)))
-    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Sigmoid')
+    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Sigmoid', save)
 
 
-def eval_relu():
+def eval_relu(save=False):
     weights = np.load('relu_weights.npy')
     w1, b1, scale, shift, mean, std, w2, b2 = weights
     w1 = normalize_weights(w1, std**2, scale)
@@ -110,4 +116,4 @@ def eval_relu():
     # report predictions
     print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
     print('MSSE enc: {}'.format(msse(pred_enc.flatten(), y_test)))
-    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Relu')
+    plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 'Relu', save)
