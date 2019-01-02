@@ -174,35 +174,3 @@ class EA(object):
         v.shape = (len(relu), len(relu[0]))
         v.encrypted_values = relu
         return v
-
-
-    def _pow3(self, val):
-        # total1 = Ciphertext()
-        # evaluate.multiply(val, val, total1)
-
-        # total2 = Ciphertext()
-        # evaluate.multiply(total1, val, total2)
-        pow = EA(np.array([]), True)
-        pow.encrypted_values = evaluate.exponentiate(val, 3, 15)
-        return pow
-
-
-    def _pow5(self, val):
-        total1 = Ciphertext()
-        evaluate.multiply(val, val, total1)
-
-        total2 = Ciphertext()
-        evaluate.multiply(total1, val, total2)
-
-        total3 = Ciphertext()
-        evaluate.multiply(total2, val, total3)
-
-        total4 = Ciphertext()
-        evaluate.multiply(total3, val, total4)
-        return total4
-
-    def print_val(self, val):
-        # for printing ciphertexts
-        result = Plaintext()
-        decrypt(val, result)
-        print(decode(result))
