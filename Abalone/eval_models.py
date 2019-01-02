@@ -82,7 +82,7 @@ def eval_sigmoid():
     w2_enc = EA(w2)
     b2_enc = EA(b2.reshape(1, -1))
     l1_enc = X_test_enc.dot(w1_enc) + b1_enc
-    l1_sig_enc = l1_enc.activate_sigmoid()
+    l1_sig_enc = l1_enc.sigmoid()
     pred_enc = (l1_sig_enc.dot(w2_enc) + b2_enc).values()
     # report predictions
     print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
