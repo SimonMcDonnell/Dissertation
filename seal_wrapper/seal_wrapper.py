@@ -158,16 +158,19 @@ class EA(object):
         for x_row in range(self.shape[0]):
             result_row = []
             for x_col in range(self.shape[1]):
-                coeff1, coeff2, coeff3, coeff4 = encode(0.937), encode(0.502), encode(0.0469), encode(-0.0000547)
-                term1, term2, term3, term4, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
+                # coeff1, coeff2, coeff3, coeff4 = encode(1.87), encode(0.501), encode(0.0234), encode(-0.00000684)
+                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(1.46), encode(0.5), encode(0.0328), encode(-0.00000175), encode(-0.0000263)
+                term1, term2, term3, term4, term5, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
                 encrypt(coeff1, term1)
                 evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
                 evaluate.exponentiate(self._getitem((x_row, x_col)), 2, ev_keys, term_extra)
                 evaluate.multiply_plain(term_extra, coeff3, term3)
                 evaluate.exponentiate(self._getitem((x_row, x_col)), 3, ev_keys, term_extra)
                 evaluate.multiply_plain(term_extra, coeff4, term4)
+                evaluate.exponentiate(self._getitem((x_row, x_col)), 4, ev_keys, term_extra)
+                evaluate.multiply_plain(term_extra, coeff5, term5)
                 result = Ciphertext()
-                evaluate.add_many([term1, term2, term3, term4], result)
+                evaluate.add_many([term1, term2, term3, term4, term5], result)
                 result_row.append(result)
             relu.append(result_row)
         v = EA(np.array([]))
