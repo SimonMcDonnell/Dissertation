@@ -65,7 +65,7 @@ def train_sigmoid(batch_norm=True, shift_scale=True):
 def train_relu():
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_dataset()
     model_relu = keras.Sequential([
-        keras.layers.Dense(2, input_shape=(10,)),
+        keras.layers.Dense(10, input_shape=(10,)),
         keras.layers.BatchNormalization(),
         keras.layers.Activation('relu'),
         keras.layers.Dense(1)
