@@ -20,7 +20,7 @@ def plot_history(history):
     plt.plot(history.epoch, np.array(history.history['val_mean_absolute_error']),
            label = 'Val loss')
     plt.legend()
-    plt.ylim([1, 2])
+    # plt.ylim([1, 2])
     plt.show()
 
 
@@ -64,9 +64,12 @@ def train_sigmoid(batch_norm=True, shift_scale=True):
 
 def train_relu():
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_dataset()
+    y_scaler = StandardScaler()
+    y_train = y_scaler.fit_transform(y_train.values.reshape(-1, 1))
+    y_val = y_scaler.transform(y_val.values.reshape(-1, 1))
     model_relu = keras.Sequential([
-        keras.layers.Dense(10, input_shape=(10,)),
-        keras.layers.BatchNormalization(),
+        keras.layers.Dense(2, input_shape=(10,)),
+        # keras.layers.BatchNormalization(),
         keras.layers.Activation('relu'),
         keras.layers.Dense(1)
     ])

@@ -158,8 +158,8 @@ class EA(object):
         for x_row in range(self.shape[0]):
             result_row = []
             for x_col in range(self.shape[1]):
-                # coeff1, coeff2, coeff3, coeff4 = encode(1.87), encode(0.501), encode(0.0234), encode(-0.00000684)
-                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(1.76), encode(0.5), encode(0.0273), encode(-0.00000101), encode(-0.0000152)
+                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(0.586), encode(0.499), encode(0.082), encode(0.0000274), encode(-0.00041) 
+                #coeff1, coeff2, coeff3, coeff4, coeff5 = encode(1.76), encode(0.5), encode(0.0273), encode(-0.00000101), encode(-0.0000152)
                 term1, term2, term3, term4, term5, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
                 encrypt(coeff1, term1)
                 evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
