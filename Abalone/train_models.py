@@ -72,8 +72,9 @@ def train_relu():
     ])
     optimizer = tf.train.AdamOptimizer(0.001)
     model_relu.compile(loss='mse', optimizer=optimizer, metrics=['mae'])
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
     history_relu = model_relu.fit(X_train, y_train, epochs=300, 
-        validation_data=[X_val, y_val])
+        validation_data=[X_val, y_val], callbacks=[early_stop])
     np.save('relu_weights', model_relu.get_weights(), allow_pickle=True)
     plot_history(history_relu)
 

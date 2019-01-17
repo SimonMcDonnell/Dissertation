@@ -16,11 +16,11 @@ def msse(pred, y):
 
 
 def normalize_weights(w, var, scale):
-    return w * scale / np.sqrt(var + 0.001)
+    return w * scale / np.sqrt(var + 0.0001)
 
 
 def normalize_bias(b, mean, var, shift, scale):
-    return (b - mean) * (scale / np.sqrt(var + 0.001)) + shift
+    return (b - mean) * (scale / np.sqrt(var + 0.0001)) + shift
 
 
 def sigmoid(z):
@@ -98,16 +98,16 @@ def eval_sigmoid(save=False):
 
 def eval_relu(save=False):
     weights = np.load('relu_weights.npy')
-    w1, b1, scale, shift, mean, std, w2, b2 = weights
-    w1 = normalize_weights(w1, std**2, scale)
-    b1 = normalize_bias(b1, mean, std**2, shift, scale).reshape(1, -1)
+    w1, b1, scale, shift, mean, var, w2, b2 = weights
+    w1 = normalize_weights(w1, var, scale)
+    b1 = normalize_bias(b1, mean, var, shift, scale).reshape(1, -1)
     # clear
     l1_clear = X_test.values.dot(w1) + b1
     l1_relu_clear = relu(l1_clear)
     pred_clear = np.dot(l1_relu_clear, w2) + b2
     # encrypted
     w1_enc = EA(w1)
-    b1_enc = EA(b1.reshape(1, -1))
+    b1_enc = EA(b1)
     w2_enc = EA(w2)
     b2_enc = EA(b2.reshape(1, -1))
     l1_enc = X_test_enc.dot(w1_enc) + b1_enc
