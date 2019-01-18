@@ -68,10 +68,10 @@ def train_relu():
     y_train = y_scaler.fit_transform(y_train.values.reshape(-1, 1))
     y_val = y_scaler.transform(y_val.values.reshape(-1, 1))
     model_relu = keras.Sequential([
-        keras.layers.Dense(2, input_shape=(10,)),
+        keras.layers.Dense(2, input_shape=(10,), kernel_regularizer=keras.regularizers.l2(0.01)),
         # keras.layers.BatchNormalization(),
         keras.layers.Activation('relu'),
-        keras.layers.Dense(1)
+        keras.layers.Dense(1, kernel_regularizer=keras.regularizers.l2(0.01))
     ])
     optimizer = tf.train.AdamOptimizer(0.001)
     model_relu.compile(loss='mse', optimizer=optimizer, metrics=['mae'])
