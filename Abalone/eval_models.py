@@ -3,11 +3,15 @@ import tensorflow as tf
 from tensorflow import keras
 from PrepareData import prepare_dataset
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 import sys
 sys.path.insert(0, '../seal_wrapper/')
 from seal_wrapper import EA
 
 X_train, X_val, X_test, y_train, y_val, y_test = prepare_dataset()
+y_scaler = StandardScaler()
+y_train = y_scaler.fit_transform(y_train.values.reshape(-1, 1))
+y_val = y_scaler.transform(y_val.values.reshape(-1, 1))
 X_test_enc = EA(X_test.values, True)
 
 # mean sum squared error
@@ -98,21 +102,24 @@ def eval_sigmoid(save=False):
 
 def eval_relu(save=False):
     weights = np.load('relu_weights.npy')
-    w1, b1, scale, shift, mean, var, w2, b2 = weights
-    w1 = normalize_weights(w1, var, scale)
-    b1 = normalize_bias(b1, mean, var, shift, scale).reshape(1, -1)
+    w1, b1, w2, b2 = weights
+    # w1, b1, scale, shift, mean, var, w2, b2 = weights
+    # w1 = normalize_weights(w1, var, scale)
+    # b1 = normalize_bias(b1, mean, var, shift, scale).reshape(1, -1)
     # clear
     l1_clear = X_test.values.dot(w1) + b1
     l1_relu_clear = relu(l1_clear)
     pred_clear = np.dot(l1_relu_clear, w2) + b2
+    pred_clear = y_scaler.inverse_transform(pred_clear.flatten())
     # encrypted
     w1_enc = EA(w1)
-    b1_enc = EA(b1)
+    b1_enc = EA(b1.reshape(1, -1))
     w2_enc = EA(w2)
     b2_enc = EA(b2.reshape(1, -1))
     l1_enc = X_test_enc.dot(w1_enc) + b1_enc
     l1_relu_enc = l1_enc.relu()
     pred_enc = (l1_relu_enc.dot(w2_enc) + b2_enc).values()
+    pred_enc = y_scaler.inverse_transform(pred_enc.flatten())
     # report predictions
     print('MSSE clear: {}'.format(msse(pred_clear.flatten(), y_test)))
     print('MSSE enc: {}'.format(msse(pred_enc.flatten(), y_test)))
