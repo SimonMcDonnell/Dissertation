@@ -30,12 +30,12 @@ def prepare_abalone():
     X_test[['length', 'diameter', 'height', 'whole_weight', 'shucked_weight', 'viscera_weight', 'shell_weight']] = scaler.transform(
         X_test[['length', 'diameter', 'height', 'whole_weight', 'shucked_weight', 'viscera_weight', 'shell_weight']])
 
-    return X_train, X_val, X_test, y_train, y_val, y_test
+    return X_train.values, X_val.values, X_test.values, y_train, y_val, y_test
 
 
 def prepare_concrete():
     # read in dataset
-    data = pd.read_csv(os.path.join(os.getcwd(), 'concrete_data.csv'))
+    data = pd.read_csv(os.path.join(os.getcwd(), 'Concrete/concrete_data.csv'))
 
     # create Train, Validation, and Test sets
     X = data.drop('ccs', axis=1)
@@ -54,7 +54,7 @@ def prepare_concrete():
 
 def prepare_bank():
     # read in dataset
-    data = pd.read_csv(os.path.join(os.getcwd(), 'banknote_authentication.txt'), 
+    data = pd.read_csv(os.path.join(os.getcwd(), 'BankNotes/banknote_authentication.txt'), 
         names=['variance', 'skewness', 'curtosis', 'entropy', 'class'])
 
     # create Train, Validation, and Test sets
