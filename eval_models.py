@@ -1,8 +1,11 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.utils import to_categorical
+from sklearn.metrics import accuracy_score, confusion_matrix
 from process_data import prepare_abalone, prepare_concrete, prepare_bank
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 import sys
 import time
@@ -21,6 +24,10 @@ def normalize_weights(w, var, gamma):
 
 def normalize_bias(b, mean, var, beta, gamma):
     return (b - mean) * (gamma / np.sqrt(var + 0.0001)) + beta
+
+
+def softmax(z):
+    return np.exp(z) / np.sum(np.exp(z), axis=1).reshape(-1, 1)
 
 
 def sigmoid(z):
@@ -47,6 +54,59 @@ def plot_predictions(pred_clear, pred_enc, y, title, path, save=True):
     ax2.set_xlabel('predicted')
     ax2.set_ylabel('true')
     ax2.plot(np.arange(0, y.max(), 0.1), np.arange(0, y.max(), 0.1))
+    if save:
+        fig.savefig(path)
+    plt.show()
+
+
+def plot_final_layer(pred_clear, pred_enc, title, path, save=True):
+    fig = plt.figure(figsize=(7, 7))
+    # clear
+    ax1 = plt.subplot(111)
+    ax1.scatter(pred_clear, pred_enc, alpha=0.2)
+    ax1.set_title(title)
+    ax1.set_xlabel('Clear')
+    ax1.set_ylabel('Encrypted')
+    ax1.plot(np.arange(pred_clear.min(), pred_clear.max(), 0.1), np.arange(pred_clear.min(), pred_clear.max(), 0.1))
+    if save:
+        fig.savefig(path)
+    plt.show()
+
+
+def plot_first_layer(l1, scale, bn, path, save=True):
+    plt.figure(figsize=(7, 7))
+    plt.hist(l1.flatten(), bins=50)
+    if save:
+        if scale and bn:
+            plt.savefig(path + '_scale_bn.pdf')
+        elif scale:
+            plt.savefig(path + '_scale.pdf')
+        elif bn:
+            plt.savefig(path + '_bn.pdf')
+        else:
+            plt.savefig(path + '.pdf')
+
+
+def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
+    mat_clear = confusion_matrix(pred_clear, y)
+    cm_clear = mat_clear / np.sum(mat_clear, axis=1)
+    mat_enc = confusion_matrix(pred_enc, y)
+    cm_enc = mat_enc / np.sum(mat_enc, axis=1)
+    fig = plt.figure(figsize=(7, 7))
+    # clear
+    ax1 = plt.subplot(121)
+    if classes is not None:
+        sns.heatmap(cm_clear, xticklabels=classes, yticklabels=classes, vmin=0., vmax=1., annot=True, ax=ax1)
+    else:
+        sns.heatmap(cm_clear, vmin=0., vmax=1., ax=ax1)
+    ax1.set_title(title + ' - clear')
+    # encrypted
+    ax2 = plt.subplot(122)
+    if classes is not None:
+        sns.heatmap(cm_enc, xticklabels=classes, yticklabels=classes, vmin=0., vmax=1., annot=True, ax=ax2)
+    else:
+        sns.heatmap(cm_enc, vmin=0., vmax=1., ax=ax2)
+    ax2.set_title(title + ' - enc')
     if save:
         fig.savefig(path)
     plt.show()
@@ -100,10 +160,10 @@ def run_and_time(X_test, w1, b1, w2, b2, y_scaler=None):
     if y_scaler != None:
         pred_enc = y_scaler.inverse_transform(pred_enc.flatten())
 
-    return [pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start]
+    return [pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1_enc.values()]
 
 
-def save_results(data_name, pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn):   
+def save_reg_results(data_name, pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn):   
     # report predictions
     print('Clear: MSSE = {};\tRuntime = {}s'.format(msse(pred_clear.flatten(), y_test), (clear_end-clear_start)))
     print('Encrypted: MSSE = {};\tRuntime = {}s'.format(msse(pred_enc.flatten(), y_test), (enc_end-enc_start)))
@@ -137,29 +197,72 @@ def save_results(data_name, pred_clear, pred_enc, y_test, clear_end, clear_start
         file.close()
 
 
+def save_class_results(data_name, pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn):   
+    # report predictions
+    print('Clear: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_clear.round(), y_test), (clear_end-clear_start)))
+    print('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc.round(), y_test), (enc_end-enc_start)))
+    if scale and bn:
+        plot_confusion(pred_clear, pred_enc, y_test, classes,
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm_scale_bn.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_scale_bn.txt', 'w')
+        file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
+        file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
+        file.close()
+    elif scale:
+        plot_confusion(pred_clear, pred_enc, y_test, classes,
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm_scale.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_scale.txt', 'w')
+        file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
+        file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
+        file.close()
+    elif bn:
+        plot_confusion(pred_clear, pred_enc, y_test, classes,
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm_bn.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_bn.txt', 'w')
+        file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
+        file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
+        file.close()
+    else:
+        plot_confusion(pred_clear, pred_enc, y_test, classes,
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}.txt', 'w')
+        file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
+        file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
+        file.close()
+
+
 def eval_abalone(scale=True, bn=False):
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_abalone()
     w1, b1, w2, b2, y_scaler = get_weights('abalone', y_train, scale, bn)
     results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
-    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start = results
-    save_results('abalone', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
+    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
+    plot_first_layer(l1, scale, bn, 'graphs/abalone/test/first_layer')
+    save_reg_results('abalone', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
 
 
 def eval_concrete(scale=True, bn=False):
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_concrete()
     w1, b1, w2, b2, y_scaler = get_weights('concrete', y_train, scale, bn)
     results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
-    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start = results
-    save_results('concrete', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
+    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
+    plot_first_layer(l1, scale, bn, 'graphs/concrete/test/first_layer')
+    save_reg_results('concrete', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
 
 
-# NOT COMPLETE
 def eval_bank(scale=False, bn=False):
+    if scale:
+        raise ValueError('Cannot scale outputs for classification tasks')
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_bank()
     w1, b1, w2, b2, y_scaler = get_weights('bank', y_train, scale, bn)
     results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
-    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start = results
-    pred_clear = sigmoid(pred_clear)
-    pred_enc = sigmoid(pred_enc)
-    save_results('bank', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
+    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
+    plot_first_layer(l1, scale, bn, 'graphs/bank/test/first_layer')
+    pred_clear_ = np.round(sigmoid(pred_clear))
+    pred_enc_ = np.round(sigmoid(pred_enc))
+    classes = ['Real', 'Fake']
+    if bn:
+        plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act_bn.pdf')
+    else:
+        plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act.pdf')
+    save_class_results('bank', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)
     
