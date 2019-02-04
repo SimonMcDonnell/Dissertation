@@ -79,7 +79,7 @@ def prepare_bank():
 
 def prepare_iris():
     # read in dataset
-    data = pd.read_csv(os.path.join(os.getcwd(), 'iris.data'), names=['sepal_length', 'sepal_width', 'petal_length',
+    data = pd.read_csv(os.path.join(os.getcwd(), 'Iris/iris.data'), names=['sepal_length', 'sepal_width', 'petal_length',
                                                                   'petal_width', 'class'])
                                                         
     # create Train, Validation, and Test sets

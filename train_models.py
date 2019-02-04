@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 from tensorflow import set_random_seed
-from process_data import prepare_abalone, prepare_concrete, prepare_bank
+from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris
 from sklearn.preprocessing import StandardScaler
 
 set_random_seed(1)
@@ -154,7 +154,7 @@ def train_iris(scale=False, bn=False):
     if bn:
         model = keras.Sequential([
             keras.layers.Dense(4, input_shape=(4,)),
-            keras.layer.BatchNormalization()
+            keras.layers.BatchNormalization(),
             keras.layers.Activation('relu'),
             keras.layers.Dense(3),
             keras.layers.Activation('softmax')
@@ -166,7 +166,7 @@ def train_iris(scale=False, bn=False):
             keras.layers.Dense(3, kernel_regularizer=keras.regularizers.l2(0.01)),
             keras.layers.Activation('softmax')
         ])
-    optimizer = tf.train.AdamOptimizer(0.001)
+    optimizer = tf.train.AdamOptimizer(0.005)
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
     # train

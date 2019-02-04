@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix
-from process_data import prepare_abalone, prepare_concrete, prepare_bank
+from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
@@ -62,10 +62,10 @@ def plot_final_layer(pred_clear, pred_enc, title, path, save=True):
     fig = plt.figure(figsize=(7, 7))
     # clear
     ax1 = plt.subplot(111)
-    ax1.scatter(pred_clear, pred_enc, alpha=0.2)
+    ax1.scatter(pred_enc, pred_clear, alpha=0.2)
     ax1.set_title(title)
-    ax1.set_xlabel('Clear')
-    ax1.set_ylabel('Encrypted')
+    ax1.set_xlabel('Encrypted')
+    ax1.set_ylabel('Clear')
     ax1.plot(np.arange(pred_clear.min(), pred_clear.max(), 0.1), np.arange(pred_clear.min(), pred_clear.max(), 0.1))
     if save:
         fig.savefig(path)
@@ -274,9 +274,9 @@ def eval_iris(scale=False, bn=False):
     results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
     pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
     plot_first_layer(l1, scale, bn, 'graphs/iris/test/first_layer')
-    pred_clear_ = np.argmax(softmax(pred_clear))
-    pred_enc_ = np.argmax(softmax(pred_enc))
-    y_test = np.argmax(y_test)
+    pred_clear_ = np.argmax(softmax(pred_clear), axis=1)
+    pred_enc_ = np.argmax(softmax(pred_enc), axis=1)
+    y_test = np.argmax(y_test, axis=1)
     classes = ['setosa', 'versicolor', 'virginica']
     if bn:
         plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act_bn.pdf')
