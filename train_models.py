@@ -143,3 +143,34 @@ def train_bank(scale=False, bn=False):
     history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
     # save
     save_weights_graphs('bank', scale, bn, model, history, 'class')
+
+
+def train_iris(scale=False, bn=False):
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_iris()
+    if scale:
+        raise ValueError('Cannot scale outputs for classification tasks')
+
+    # construct model
+    if bn:
+        model = keras.Sequential([
+            keras.layers.Dense(4, input_shape=(4,)),
+            keras.layer.BatchNormalization()
+            keras.layers.Activation('relu'),
+            keras.layers.Dense(3),
+            keras.layers.Activation('softmax')
+        ])
+    else:
+        model = keras.Sequential([
+            keras.layers.Dense(4, input_shape=(4,), kernel_regularizer=keras.regularizers.l2(0.01)),
+            keras.layers.Activation('relu'),
+            keras.layers.Dense(3, kernel_regularizer=keras.regularizers.l2(0.01)),
+            keras.layers.Activation('softmax')
+        ])
+    optimizer = tf.train.AdamOptimizer(0.001)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+    # train
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='auto')
+    history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
+    # save
+    save_weights_graphs('iris', scale, bn, model, history, 'class')

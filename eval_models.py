@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.utils import to_categorical
 from sklearn.metrics import accuracy_score, confusion_matrix
 from process_data import prepare_abalone, prepare_concrete, prepare_bank
 import matplotlib.pyplot as plt
@@ -89,9 +88,9 @@ def plot_first_layer(l1, scale, bn, path, save=True):
 
 def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
     mat_clear = confusion_matrix(pred_clear, y)
-    cm_clear = mat_clear / np.sum(mat_clear, axis=1)
+    cm_clear = mat_clear / np.sum(mat_clear, axis=1).reshape(-1, 1)
     mat_enc = confusion_matrix(pred_enc, y)
-    cm_enc = mat_enc / np.sum(mat_enc, axis=1)
+    cm_enc = mat_enc / np.sum(mat_enc, axis=1).reshape(-1, 1)
     fig = plt.figure(figsize=(7, 7))
     # clear
     ax1 = plt.subplot(121)
@@ -265,4 +264,22 @@ def eval_bank(scale=False, bn=False):
     else:
         plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act.pdf')
     save_class_results('bank', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)
-    
+
+
+def eval_iris(scale=False, bn=False):
+    if scale:
+        raise ValueError('Cannot scale outputs for classification tasks')
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_iris()
+    w1, b1, w2, b2, y_scaler = get_weights('iris', y_train, scale, bn)
+    results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
+    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
+    plot_first_layer(l1, scale, bn, 'graphs/iris/test/first_layer')
+    pred_clear_ = np.argmax(softmax(pred_clear))
+    pred_enc_ = np.argmax(softmax(pred_enc))
+    y_test = np.argmax(y_test)
+    classes = ['setosa', 'versicolor', 'virginica']
+    if bn:
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act_bn.pdf')
+    else:
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act.pdf')
+    save_class_results('iris', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)
