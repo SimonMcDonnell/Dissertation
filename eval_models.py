@@ -6,7 +6,7 @@ import tensorflow as tf
 tf.set_random_seed(82)
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix
-from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate
+from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate, prepare_ecoli
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
@@ -296,3 +296,22 @@ def eval_real_estate(scale=True, bn=False):
     pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
     plot_first_layer(l1, scale, bn, 'graphs/real_estate/test/first_layer')
     save_reg_results('real_estate', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
+
+
+def eval_ecoli(scale=False, bn=False):
+    if scale:
+        raise ValueError('Cannot scale outputs for classification tasks')
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_ecoli()
+    w1, b1, w2, b2, y_scaler = get_weights('ecoli', y_train, scale, bn)
+    results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
+    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
+    plot_first_layer(l1, scale, bn, 'graphs/ecoli/test/first_layer')
+    pred_clear_ = np.argmax(softmax(pred_clear), axis=1)
+    pred_enc_ = np.argmax(softmax(pred_enc), axis=1)
+    y_test = np.argmax(y_test, axis=1)
+    classes = ['cp', 'im', 'pp', 'imU', 'om', 'omL', 'imL', 'imS']
+    if bn:
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act_bn.pdf')
+    else:
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act.pdf')
+    save_class_results('ecoli', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)

@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 from tensorflow import set_random_seed
-from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate
+from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate, prepare_ecoli
 from sklearn.preprocessing import StandardScaler
 
 set_random_seed(1)
@@ -210,3 +210,34 @@ def train_real_estate(scale=True, bn=False):
     history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
     # save
     save_weights_graphs('real_estate', scale, bn, model, history, 'reg')
+
+
+def train_ecoli(scale=False, bn=False):
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_ecoli()
+    if scale:
+        raise ValueError('Cannot scale outputs for classification tasks')
+
+    # construct model
+    if bn:
+        model = keras.Sequential([
+            keras.layers.Dense(8, input_shape=(7,)),
+            keras.layers.BatchNormalization(),
+            keras.layers.Activation('relu'),
+            keras.layers.Dense(8),
+            keras.layers.Activation('softmax')
+        ])
+    else:
+        model = keras.Sequential([
+            keras.layers.Dense(8, input_shape=(7,), kernel_regularizer=keras.regularizers.l2(0.01)),
+            keras.layers.Activation('relu'),
+            keras.layers.Dense(8, kernel_regularizer=keras.regularizers.l2(0.01)),
+            keras.layers.Activation('softmax')
+        ])
+    optimizer = tf.train.AdamOptimizer(0.005)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+    # train
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
+    history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
+    # save
+    save_weights_graphs('ecoli', scale, bn, model, history, 'class')
