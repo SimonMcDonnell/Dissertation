@@ -1,6 +1,11 @@
 import numpy as np
+np.random.seed(42)
+import random as rn
+rn.seed(12345)
 import pandas as pd
 import os
+import tensorflow as tf
+tf.set_random_seed(82)
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split

@@ -1,5 +1,9 @@
 import numpy as np
+np.random.seed(42)
+import random as rn
+rn.seed(12345)
 import tensorflow as tf
+tf.set_random_seed(82)
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix
 from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate

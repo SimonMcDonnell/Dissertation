@@ -1,8 +1,12 @@
 import numpy as np
+np.random.seed(42)
+import random as rn
+rn.seed(12345)
+import tensorflow as tf
+tf.set_random_seed(82)
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 from tensorflow import set_random_seed
