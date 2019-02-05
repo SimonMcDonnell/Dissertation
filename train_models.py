@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 from tensorflow import set_random_seed
-from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris
+from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate
 from sklearn.preprocessing import StandardScaler
 
 set_random_seed(1)
@@ -174,3 +174,35 @@ def train_iris(scale=False, bn=False):
     history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
     # save
     save_weights_graphs('iris', scale, bn, model, history, 'class')
+
+
+def train_real_estate(scale=True, bn=False):
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_real_estate()
+    if scale:
+        y_scaler = StandardScaler()
+        y_train = y_scaler.fit_transform(y_train.values.reshape(-1, 1))
+        y_val = y_scaler.transform(y_val.values.reshape(-1, 1))
+
+    # construct model
+    if bn:
+        # batch normalization version
+        model = keras.Sequential([
+            keras.layers.Dense(5, input_shape=(X_train.shape[1],)),
+            keras.layers.BatchNormalization(),
+            keras.layers.Activation('relu'),
+            keras.layers.Dense(1)
+        ])
+    else:
+        model = keras.Sequential([
+            keras.layers.Dense(5, input_shape=(X_train.shape[1],), kernel_regularizer=keras.regularizers.l2(0.01)),
+            keras.layers.Activation('relu'),
+            keras.layers.Dense(1, kernel_regularizer=keras.regularizers.l2(0.01))
+        ])
+    optimizer = tf.train.AdamOptimizer(0.001)
+    model.compile(loss='mse', optimizer=optimizer, metrics=['mae'])
+
+    # train
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
+    history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
+    # save
+    save_weights_graphs('real_estate', scale, bn, model, history, 'reg')

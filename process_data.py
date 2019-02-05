@@ -101,3 +101,22 @@ def prepare_iris():
 
     return X_train, X_val, X_test, y_train, y_val, y_test
 
+
+def prepare_real_estate():
+    # read in dataset
+    data = pd.read_csv(os.path.join(os.getcwd(), 'RealEstate/Real_estate_valuation_data_set.csv'))
+
+    # create Train, Validation, and Test sets
+    data.drop('transaction_date', axis=1, inplace=True)
+    X = data.drop('house_price_of_unit_area', axis=1)
+    y = data['house_price_of_unit_area']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=1)
+
+    # standardize continuous values to zero mean and unit variance
+    X_scaler = StandardScaler()
+    X_train = X_scaler.fit_transform(X_train)
+    X_val = X_scaler.transform(X_val)
+    X_test = X_scaler.transform(X_test)
+
+    return X_train, X_val, X_test, y_train, y_val, y_test

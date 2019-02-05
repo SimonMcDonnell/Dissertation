@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.metrics import accuracy_score, confusion_matrix
-from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris
+from process_data import prepare_abalone, prepare_concrete, prepare_bank, prepare_iris, prepare_real_estate
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
@@ -283,3 +283,12 @@ def eval_iris(scale=False, bn=False):
     else:
         plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act.pdf')
     save_class_results('iris', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)
+
+
+def eval_real_estate(scale=True, bn=False):
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_real_estate()
+    w1, b1, w2, b2, y_scaler = get_weights('real_estate', y_train, scale, bn)
+    results = run_and_time(X_test, w1, b1, w2, b2, y_scaler)
+    pred_clear, pred_enc, clear_end, clear_start, enc_end, enc_start, l1 = results
+    plot_first_layer(l1, scale, bn, 'graphs/real_estate/test/first_layer')
+    save_reg_results('real_estate', pred_clear, pred_enc, y_test, clear_end, clear_start, enc_end, enc_start, scale, bn)
