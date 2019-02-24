@@ -96,6 +96,7 @@ def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
     mat_enc = confusion_matrix(pred_enc, y)
     cm_enc = mat_enc / np.sum(mat_enc, axis=1).reshape(-1, 1)
     fig = plt.figure(figsize=(7, 7))
+    fig.tight_layout()
     # clear
     ax1 = plt.subplot(121)
     if classes is not None:
