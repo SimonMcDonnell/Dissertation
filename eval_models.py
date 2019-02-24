@@ -42,7 +42,7 @@ def relu(z):
 
 
 def plot_predictions(pred_clear, pred_enc, y, title, path, save=True):
-    fig = plt.figure(figsize=(7, 7))
+    fig = plt.figure(figsize=(9, 5))
     # clear
     ax1 = plt.subplot(121)
     ax1.scatter(pred_clear, y, alpha=0.2)
@@ -95,8 +95,7 @@ def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
     cm_clear = mat_clear / np.sum(mat_clear, axis=1).reshape(-1, 1)
     mat_enc = confusion_matrix(pred_enc, y)
     cm_enc = mat_enc / np.sum(mat_enc, axis=1).reshape(-1, 1)
-    fig = plt.figure(figsize=(7, 7))
-    fig.tight_layout()
+    fig = plt.figure(figsize=(9, 5))
     # clear
     ax1 = plt.subplot(121)
     if classes is not None:
