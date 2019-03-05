@@ -79,6 +79,7 @@ def plot_final_layer(pred_clear, pred_enc, title, path, save=True):
 def plot_first_layer(l1, scale, bn, path, save=True):
     plt.figure(figsize=(7, 7))
     plt.hist(l1.flatten(), bins=50)
+    plt.ylabel('Count')
     if save:
         if scale and bn:
             plt.savefig(path + '_scale_bn.pdf')
