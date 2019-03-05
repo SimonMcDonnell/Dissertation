@@ -46,14 +46,14 @@ def plot_predictions(pred_clear, pred_enc, y, title, path, save=True):
     # clear
     ax1 = plt.subplot(121)
     ax1.scatter(pred_clear, y, alpha=0.2)
-    ax1.set_title(title + ' - clear')
+    ax1.set_title(title.capitalize() + ' - Unencrypted')
     ax1.set_xlabel('predicted')
     ax1.set_ylabel('true')
     ax1.plot(np.arange(0, y.max(), 0.1), np.arange(0, y.max(), 0.1))
     # encrypted
     ax2 = plt.subplot(122)
     ax2.scatter(pred_enc, y, alpha=0.2)
-    ax2.set_title(title + ' - enc')
+    ax2.set_title(title.capitalize() + ' - Encrypted')
     ax2.set_xlabel('predicted')
     ax2.set_ylabel('true')
     ax2.plot(np.arange(0, y.max(), 0.1), np.arange(0, y.max(), 0.1))
@@ -69,7 +69,7 @@ def plot_final_layer(pred_clear, pred_enc, title, path, save=True):
     ax1.scatter(pred_enc, pred_clear, alpha=0.2)
     ax1.set_title(title)
     ax1.set_xlabel('Encrypted')
-    ax1.set_ylabel('Clear')
+    ax1.set_ylabel('Unencrypted')
     ax1.plot(np.arange(pred_clear.min(), pred_clear.max(), 0.1), np.arange(pred_clear.min(), pred_clear.max(), 0.1))
     if save:
         fig.savefig(path)
