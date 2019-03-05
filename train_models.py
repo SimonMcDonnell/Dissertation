@@ -64,14 +64,14 @@ def train_abalone(scale=True, bn=False):
     if bn:
         # batch normalization version
         model = keras.Sequential([
-            keras.layers.Dense(3, input_shape=(X_train.shape[1],)),
+            keras.layers.Dense(2, input_shape=(X_train.shape[1],)),
             keras.layers.BatchNormalization(),
             keras.layers.Activation('relu'),
             keras.layers.Dense(1)
         ])
     else:
         model = keras.Sequential([
-            keras.layers.Dense(3, input_shape=(X_train.shape[1],), kernel_regularizer=keras.regularizers.l2(0.01)),
+            keras.layers.Dense(2, input_shape=(X_train.shape[1],), kernel_regularizer=keras.regularizers.l2(0.01)),
             keras.layers.Activation('relu'),
             keras.layers.Dense(1, kernel_regularizer=keras.regularizers.l2(0.01))
         ])
@@ -79,7 +79,7 @@ def train_abalone(scale=True, bn=False):
     model.compile(loss='mse', optimizer=optimizer, metrics=['mae'])
 
     # train
-    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=0, mode='auto')
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='auto')
     history = model.fit(X_train, y_train, epochs=1000, validation_data=[X_val, y_val], callbacks=[early_stop])
     # save
     save_weights_graphs('abalone', scale, bn, model, history, 'reg')
