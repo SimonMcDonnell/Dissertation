@@ -103,14 +103,14 @@ def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
         sns.heatmap(cm_clear, xticklabels=classes, yticklabels=classes, vmin=0., vmax=1., annot=True, ax=ax1)
     else:
         sns.heatmap(cm_clear, vmin=0., vmax=1., ax=ax1)
-    ax1.set_title(title + ' - clear')
+    ax1.set_title(title.capitalize() + ' - Unencrypted')
     # encrypted
     ax2 = plt.subplot(122)
     if classes is not None:
         sns.heatmap(cm_enc, xticklabels=classes, yticklabels=classes, vmin=0., vmax=1., annot=True, ax=ax2)
     else:
         sns.heatmap(cm_enc, vmin=0., vmax=1., ax=ax2)
-    ax2.set_title(title + ' - enc')
+    ax2.set_title(title.capitalize() + ' - Encrypted')
     if save:
         fig.savefig(path)
     plt.show()
