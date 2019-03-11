@@ -132,27 +132,6 @@ class EA(object):
         return np.array(plain_result)
 
     
-    def sigmoid(self):
-        sigmoid = []
-        for x_row in range(self.shape[0]):
-            result_row = []
-            for x_col in range(self.shape[1]):
-                coeff1, coeff2, coeff3 = encode(0.5), encode(0.25), encode(-0.02083)
-                term1, term2, term3, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
-                encrypt(coeff1, term1)
-                evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
-                evaluate.exponentiate(self._getitem((x_row, x_col)), 3, ev_keys, term_extra)
-                evaluate.multiply_plain(term_extra, coeff3, term3)
-                result = Ciphertext()
-                evaluate.add_many([term1, term2, term3], result)
-                result_row.append(result)
-            sigmoid.append(result_row)
-        v = EA(np.array([]))
-        v.shape = (len(sigmoid), len(sigmoid[0]))
-        v.encrypted_values = sigmoid
-        return v
-
-    
     def relu(self):
         relu = []
         for x_row in range(self.shape[0]):
@@ -180,4 +159,50 @@ class EA(object):
         v = EA(np.array([]))
         v.shape = (len(relu), len(relu[0]))
         v.encrypted_values = relu
+        return v
+
+    
+    def sigmoid(self):
+        sigmoid = []
+        for x_row in range(self.shape[0]):
+            result_row = []
+            for x_col in range(self.shape[1]):
+                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(0.499), encode(0.217), encode(0.000224), encode(-0.00660)
+                term1, term2, term3, term4, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
+                encrypt(coeff1, term1)
+                evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
+                evaluate.exponentiate(self._getitem((x_row, x_col)), 2, ev_keys, term_extra)
+                evaluate.multiply_plain(term_extra, coeff3, term3)
+                evaluate.exponentiate(self._getitem((x_row, x_col)), 3, ev_keys, term_extra)
+                evaluate.multiply_plain(term_extra, coeff4, term4)
+                result = Ciphertext()
+                evaluate.add_many([term1, term2, term3, term4], result)
+                result_row.append(result)
+            sigmoid.append(result_row)
+        v = EA(np.array([]))
+        v.shape = (len(sigmoid), len(sigmoid[0]))
+        v.encrypted_values = sigmoid
+        return v
+
+
+    def tanh(self):
+        tanh = []
+        for x_row in range(self.shape[0]):
+            result_row = []
+            for x_col in range(self.shape[1]):
+                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(-0.00428), encode(0.600), encode(0.00134), encode(-0.0255)
+                term1, term2, term3, term4, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
+                encrypt(coeff1, term1)
+                evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
+                evaluate.exponentiate(self._getitem((x_row, x_col)), 2, ev_keys, term_extra)
+                evaluate.multiply_plain(term_extra, coeff3, term3)
+                evaluate.exponentiate(self._getitem((x_row, x_col)), 3, ev_keys, term_extra)
+                evaluate.multiply_plain(term_extra, coeff4, term4)
+                result = Ciphertext()
+                evaluate.add_many([term1, term2, term3, term4], result)
+                result_row.append(result)
+            tanh.append(result_row)
+        v = EA(np.array([]))
+        v.shape = (len(tanh), len(tanh[0]))
+        v.encrypted_values = tanh
         return v
