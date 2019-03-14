@@ -167,7 +167,7 @@ class EA(object):
         for x_row in range(self.shape[0]):
             result_row = []
             for x_col in range(self.shape[1]):
-                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(0.499), encode(0.217), encode(0.000224), encode(-0.00660)
+                coeff1, coeff2, coeff3, coeff4 = encode(0.499), encode(0.217), encode(0.000224), encode(-0.00660)
                 term1, term2, term3, term4, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
                 encrypt(coeff1, term1)
                 evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
@@ -190,7 +190,7 @@ class EA(object):
         for x_row in range(self.shape[0]):
             result_row = []
             for x_col in range(self.shape[1]):
-                coeff1, coeff2, coeff3, coeff4, coeff5 = encode(-0.00428), encode(0.600), encode(0.00134), encode(-0.0255)
+                coeff1, coeff2, coeff3, coeff4 = encode(-0.00428), encode(0.600), encode(0.00134), encode(-0.0255)
                 term1, term2, term3, term4, term_extra = Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext(), Ciphertext()
                 encrypt(coeff1, term1)
                 evaluate.multiply_plain(self._getitem((x_row, x_col)), coeff2, term2)
