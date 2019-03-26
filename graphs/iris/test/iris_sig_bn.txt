@@ -1,0 +1,2 @@
+Clear: Accuracy = 0.9166666666666666;	Runtime = 0.006978750228881836s
+Encrypted: Accuracy = 0.875;	Runtime = 7.61379861831665s

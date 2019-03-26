@@ -41,6 +41,10 @@ def relu(z):
     return np.maximum(0, z)
 
 
+def tanh(z):
+    return (np.exp(z) - np.exp(-z)) / (np.exp(z) + np.exp(-z))
+
+
 def plot_predictions(pred_clear, pred_enc, y, title, path, save=True):
     fig = plt.figure(figsize=(9, 5))
     # clear
@@ -82,13 +86,13 @@ def plot_first_layer(l1, scale, bn, path, save=True):
     plt.ylabel('Count')
     if save:
         if scale and bn:
-            plt.savefig(path + '_scale_bn.pdf')
+            plt.savefig(path + '_tanh_scale_bn.pdf')
         elif scale:
-            plt.savefig(path + '_scale.pdf')
+            plt.savefig(path + '_tanh_scale.pdf')
         elif bn:
-            plt.savefig(path + '_bn.pdf')
+            plt.savefig(path + '_tanh_bn.pdf')
         else:
-            plt.savefig(path + '.pdf')
+            plt.savefig(path + '_tanh.pdf')
 
 
 def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
@@ -119,22 +123,22 @@ def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
 def get_weights(data_name, y_train, scale, bn):
     y_scaler = None
     if scale and bn:
-        weights = np.load(f'weights/{data_name}/{data_name}_scale_bn.npy')
+        weights = np.load(f'weights/{data_name}/{data_name}_tanh_scale_bn.npy')
         w1, b1, gamma, beta, mean, var, w2, b2 = weights
         w1 = normalize_weights(w1, var, gamma)
         b1 = normalize_bias(b1, mean, var, beta, gamma)
         y_scaler = StandardScaler().fit(y_train.values.reshape(-1, 1))
     elif scale:
-        weights = np.load(f'weights/{data_name}/{data_name}_scale.npy')
+        weights = np.load(f'weights/{data_name}/{data_name}_tanh_scale.npy')
         w1, b1, w2, b2 = weights
         y_scaler = StandardScaler().fit(y_train.values.reshape(-1, 1))
     elif bn:
-        weights = np.load(f'weights/{data_name}/{data_name}_bn.npy')
+        weights = np.load(f'weights/{data_name}/{data_name}_tanh_bn.npy')
         w1, b1, gamma, beta, mean, var, w2, b2 = weights
         w1 = normalize_weights(w1, var, gamma)
         b1 = normalize_bias(b1, mean, var, beta, gamma)
     else:
-        weights = np.load(f'weights/{data_name}/{data_name}.npy')
+        weights = np.load(f'weights/{data_name}/{data_name}_tanh.npy')
         w1, b1, w2, b2 = weights
     return [w1, b1, w2, b2, y_scaler]
 
@@ -143,8 +147,8 @@ def run_and_time(X_test, w1, b1, w2, b2, y_scaler=None):
     # clear
     clear_start = time.time()
     l1_clear = X_test.dot(w1) + b1
-    l1_relu_clear = relu(l1_clear)
-    pred_clear = np.dot(l1_relu_clear, w2) + b2
+    l1_tanh_clear = tanh(l1_clear)
+    pred_clear = np.dot(l1_tanh_clear, w2) + b2
     clear_end = time.time()
     if y_scaler != None:
         pred_clear = y_scaler.inverse_transform(pred_clear.flatten())
@@ -157,8 +161,8 @@ def run_and_time(X_test, w1, b1, w2, b2, y_scaler=None):
     b2_enc = EA(b2.reshape(1, -1))
     enc_start = time.time()
     l1_enc = X_test_enc.dot(w1_enc) + b1_enc
-    l1_relu_enc = l1_enc.relu()
-    pred_enc = l1_relu_enc.dot(w2_enc) + b2_enc
+    l1_tanh_enc = l1_enc.tanh()
+    pred_enc = l1_tanh_enc.dot(w2_enc) + b2_enc
     enc_end = time.time()
     pred_enc = pred_enc.values()
     if y_scaler != None:
@@ -173,29 +177,29 @@ def save_reg_results(data_name, pred_clear, pred_enc, y_test, clear_end, clear_s
     print('Encrypted: MSSE = {};\tRuntime = {}s'.format(msse(pred_enc.flatten(), y_test), (enc_end-enc_start)))
     if scale and bn:
         plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_scale_bn.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}_scale_bn.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_scale_bn.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh_scale_bn.txt', 'w')
         file.write('Clear: MSSE = {};\tRuntime = {}s\n'.format(msse(pred_clear.flatten(), y_test), (clear_end-clear_start)))
         file.write('Encrypted: MSSE = {};\tRuntime = {}s'.format(msse(pred_enc.flatten(), y_test), (enc_end-enc_start)))
         file.close()
     elif scale:
         plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_scale.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}_scale.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_scale.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh_scale.txt', 'w')
         file.write('Clear: MSSE = {};\tRuntime = {}s\n'.format(msse(pred_clear.flatten(), y_test), (clear_end-clear_start)))
         file.write('Encrypted: MSSE = {};\tRuntime = {}s'.format(msse(pred_enc.flatten(), y_test), (enc_end-enc_start)))
         file.close()
     elif bn:
         plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_bn.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}_bn.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_bn.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh_bn.txt', 'w')
         file.write('Clear: MSSE = {};\tRuntime = {}s\n'.format(msse(pred_clear.flatten(), y_test), (clear_end-clear_start)))
         file.write('Encrypted: MSSE = {};\tRuntime = {}s'.format(msse(pred_enc.flatten(), y_test), (enc_end-enc_start)))
         file.close()
     else:
         plot_predictions(pred_clear.flatten(), pred_enc.flatten(), y_test, 
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh.txt', 'w')
         file.write('Clear: MSSE = {};\tRuntime = {}s\n'.format(msse(pred_clear.flatten(), y_test), (clear_end-clear_start)))
         file.write('Encrypted: MSSE = {};\tRuntime = {}s'.format(msse(pred_enc.flatten(), y_test), (enc_end-enc_start)))
         file.close()
@@ -207,29 +211,29 @@ def save_class_results(data_name, pred_clear, pred_enc, y_test, clear_end, clear
     print('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc.round(), y_test), (enc_end-enc_start)))
     if scale and bn:
         plot_confusion(pred_clear, pred_enc, y_test, classes,
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm_scale_bn.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}_scale_bn.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_cm_scale_bn.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh_scale_bn.txt', 'w')
         file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
         file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
         file.close()
     elif scale:
         plot_confusion(pred_clear, pred_enc, y_test, classes,
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm_scale.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}_scale.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_cm_scale.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh_scale.txt', 'w')
         file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
         file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
         file.close()
     elif bn:
         plot_confusion(pred_clear, pred_enc, y_test, classes,
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm_bn.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}_bn.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_cm_bn.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh_bn.txt', 'w')
         file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
         file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
         file.close()
     else:
         plot_confusion(pred_clear, pred_enc, y_test, classes,
-            f'{data_name}', f'graphs/{data_name}/test/{data_name}_cm.pdf')
-        file = open(f'graphs/{data_name}/test/{data_name}.txt', 'w')
+            f'{data_name}', f'graphs/{data_name}/test/{data_name}_tanh_cm.pdf')
+        file = open(f'graphs/{data_name}/test/{data_name}_tanh.txt', 'w')
         file.write('Clear: Accuracy = {};\tRuntime = {}s\n'.format(accuracy_score(pred_clear, y_test), (clear_end-clear_start)))
         file.write('Encrypted: Accuracy = {};\tRuntime = {}s'.format(accuracy_score(pred_enc, y_test), (enc_end-enc_start)))
         file.close()
@@ -265,9 +269,9 @@ def eval_bank(scale=False, bn=False):
     pred_enc_ = np.round(sigmoid(pred_enc))
     classes = ['Real', 'Fake']
     if bn:
-        plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act_bn.pdf')
+        plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act_tanh_bn.pdf')
     else:
-        plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act.pdf')
+        plot_final_layer(pred_clear, pred_enc, 'Final layer predictions', 'graphs/bank/test/bank_final_act_tanh.pdf')
     save_class_results('bank', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)
 
 
@@ -284,9 +288,9 @@ def eval_iris(scale=False, bn=False):
     y_test = np.argmax(y_test, axis=1)
     classes = ['setosa', 'versicolor', 'virginica']
     if bn:
-        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act_bn.pdf')
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act_tanh_bn.pdf')
     else:
-        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act.pdf')
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/iris/test/iris_final_act_tanh.pdf')
     save_class_results('iris', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)
 
 
@@ -312,7 +316,7 @@ def eval_ecoli(scale=False, bn=False):
     y_test = np.argmax(y_test, axis=1)
     classes = ['cp', 'im', 'pp', 'imU', 'om', 'omL', 'imL', 'imS']
     if bn:
-        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act_bn.pdf')
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act_tanh_bn.pdf')
     else:
-        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act.pdf')
+        plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act_tanh.pdf')
     save_class_results('ecoli', pred_clear_, pred_enc_, y_test, clear_end, clear_start, enc_end, enc_start, classes, scale, bn)

@@ -40,17 +40,17 @@ def plot_history(history, type='reg', save=None):
 
 def save_weights_graphs(data_name, scale, bn, model, history, type):
     if scale and bn:
-        np.save(f'weights/{data_name}/{data_name}_scale_bn', model.get_weights(), allow_pickle=True)
-        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_scale_bn.pdf')
+        np.save(f'weights/{data_name}/{data_name}_tanh_scale_bn', model.get_weights(), allow_pickle=True)
+        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_tanh_scale_bn.pdf')
     elif scale:
-        np.save(f'weights/{data_name}/{data_name}_scale', model.get_weights(), allow_pickle=True)
-        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_scale.pdf')
+        np.save(f'weights/{data_name}/{data_name}_tanh_scale', model.get_weights(), allow_pickle=True)
+        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_tanh_scale.pdf')
     elif bn:
-        np.save(f'weights/{data_name}/{data_name}_bn', model.get_weights(), allow_pickle=True)
-        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_bn.pdf')
+        np.save(f'weights/{data_name}/{data_name}_tanh_bn', model.get_weights(), allow_pickle=True)
+        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_tanh_bn.pdf')
     else:
-        np.save(f'weights/{data_name}/{data_name}', model.get_weights(), allow_pickle=True)
-        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}.pdf')
+        np.save(f'weights/{data_name}/{data_name}_tanh', model.get_weights(), allow_pickle=True)
+        plot_history(history, type, save=f'graphs/{data_name}/train/{data_name}_tanh.pdf')
 
 
 def train_abalone(scale=True, bn=False):
@@ -98,13 +98,13 @@ def train_concrete(scale=True, bn=False):
         model = keras.Sequential([
             keras.layers.Dense(8, input_shape=(X_train.shape[1],)),
             keras.layers.BatchNormalization(),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(1)
         ])
     else:
         model = keras.Sequential([
             keras.layers.Dense(8, input_shape=(X_train.shape[1],), kernel_regularizer=keras.regularizers.l2(0.01)),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(1, kernel_regularizer=keras.regularizers.l2(0.01))
         ])
     optimizer = tf.train.AdamOptimizer(0.001)
@@ -128,14 +128,14 @@ def train_bank(scale=False, bn=False):
         model = keras.Sequential([
             keras.layers.Dense(4, input_shape=(X_train.shape[1],)),
             keras.layers.BatchNormalization(),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(1),
             keras.layers.Activation('sigmoid')
         ])
     else:
         model = keras.Sequential([
             keras.layers.Dense(4, input_shape=(X_train.shape[1],), kernel_regularizer=keras.regularizers.l2(0.01)),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(1, kernel_regularizer=keras.regularizers.l2(0.01)),
             keras.layers.Activation('sigmoid')
         ])
@@ -159,14 +159,14 @@ def train_iris(scale=False, bn=False):
         model = keras.Sequential([
             keras.layers.Dense(4, input_shape=(4,)),
             keras.layers.BatchNormalization(),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(3),
             keras.layers.Activation('softmax')
         ])
     else:
         model = keras.Sequential([
             keras.layers.Dense(4, input_shape=(4,), kernel_regularizer=keras.regularizers.l2(0.01)),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(3, kernel_regularizer=keras.regularizers.l2(0.01)),
             keras.layers.Activation('softmax')
         ])
@@ -193,13 +193,13 @@ def train_real_estate(scale=True, bn=False):
         model = keras.Sequential([
             keras.layers.Dense(5, input_shape=(X_train.shape[1],)),
             keras.layers.BatchNormalization(),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(1)
         ])
     else:
         model = keras.Sequential([
             keras.layers.Dense(5, input_shape=(X_train.shape[1],), kernel_regularizer=keras.regularizers.l2(0.01)),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(1, kernel_regularizer=keras.regularizers.l2(0.01))
         ])
     optimizer = tf.train.AdamOptimizer(0.001)
@@ -222,14 +222,14 @@ def train_ecoli(scale=False, bn=False):
         model = keras.Sequential([
             keras.layers.Dense(8, input_shape=(7,)),
             keras.layers.BatchNormalization(),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(8),
             keras.layers.Activation('softmax')
         ])
     else:
         model = keras.Sequential([
             keras.layers.Dense(8, input_shape=(7,), kernel_regularizer=keras.regularizers.l2(0.01)),
-            keras.layers.Activation('relu'),
+            keras.layers.Activation('tanh'),
             keras.layers.Dense(8, kernel_regularizer=keras.regularizers.l2(0.01)),
             keras.layers.Activation('softmax')
         ])
