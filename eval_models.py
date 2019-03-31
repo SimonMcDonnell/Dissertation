@@ -96,9 +96,9 @@ def plot_first_layer(l1, scale, bn, path, save=True):
 
 
 def plot_confusion(pred_clear, pred_enc, y, classes, title, path, save=True):
-    mat_clear = confusion_matrix(pred_clear, y)
+    mat_clear = confusion_matrix(y, pred_clear)
     cm_clear = mat_clear / np.sum(mat_clear, axis=1).reshape(-1, 1)
-    mat_enc = confusion_matrix(pred_enc, y)
+    mat_enc = confusion_matrix(y, pred_enc)
     cm_enc = mat_enc / np.sum(mat_enc, axis=1).reshape(-1, 1)
     fig = plt.figure(figsize=(9, 5))
     # clear
@@ -314,7 +314,7 @@ def eval_ecoli(scale=False, bn=False):
     pred_clear_ = np.argmax(softmax(pred_clear), axis=1)
     pred_enc_ = np.argmax(softmax(pred_enc), axis=1)
     y_test = np.argmax(y_test, axis=1)
-    classes = ['cp', 'im', 'pp', 'imU', 'om', 'omL', 'imL', 'imS']
+    classes = ['cp', 'im', 'imL','imU', 'om', 'omL', 'pp']
     if bn:
         plot_final_layer(pred_clear.max(axis=1), pred_enc.max(axis=1), 'Final layer predictions', 'graphs/ecoli/test/ecoli_final_act_tanh_bn.pdf')
     else:
